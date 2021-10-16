@@ -5,7 +5,6 @@ Starter terraform for generating three tier infrastrastructure on AWS.
 ## Background
 
 This is starter project build for setting up multi-tier environment using terraform. <br/>
-Article at [Linked-in](https://www.linkedin.com/pulse/react-hooks-first-impressions-mandar-nilange) and [Medium](https://medium.com/@mandarnilange/react-hooks-first-impressions-c3a50f55fc62) details and discusses React hooks.
 
 
 ## Required before you start 
@@ -14,7 +13,7 @@ EC2 Key pair created in AWS  <br/>
 Instance profile created for EC2 <br/>
 
 
-## Modules details 
+## Modules  
 Following are the key modules created as part of this repo. 
 
 ### network module 
@@ -92,12 +91,12 @@ module "database" {
 
 ## Architecture example 
 
-![Screenshot](AWS example architecture.png)
+![Sample AWS Architecture](/AWS example architecture.png)
 
 ## Steps to use example 
 
 ### Update terraform variables
-Update terraform variables in terraform-dev.tfvars to reflect your needed environment 
+Update terraform variables in /example/terraform-dev.tfvars to reflect your needed environment 
 
 | Variable Name | Description of the variable | 
 | ------------- | --------------------------- | 
@@ -115,7 +114,7 @@ Update terraform variables in terraform-dev.tfvars to reflect your needed enviro
 
 
 ### Initiallize Terraform 
-Change to exmaples <<TODO>> directory and execute following command to initialize terraform 
+Change to /exmaples directory and execute following command to initialize terraform 
 
 ```
 terraform init 
@@ -133,6 +132,87 @@ Execute following command to create the infrastructure
 
 ```
 terraform apply -var-file=terraform-dev.tfvars 
+```
+
+### Check deployed environment 
+Terraform will output following details post execution. If your AMI has apache installed then use the endpoints listed in the alb_dns_name output 
+
+```
+  + alb_dns_name       = {
+      + My-API = (known after apply)
+      + My-Web = (known after apply)
+    }
+  + alb_sg             = (known after apply)
+  + db_details         = {
+      + db_endpoint        = (known after apply)
+      + db_reader_endpoint = (known after apply)
+      + db_username        = "fittr_db_admin"
+    }
+  + db_sg              = (known after apply)
+  + db_subnet_group_id = (known after apply)
+  + private_subnets    = [
+      + "10.0.48.0/20",
+      + "10.0.64.0/20",
+      + "10.0.80.0/20",
+    ]
+  + public_subnets     = [
+      + "10.0.0.0/20",
+      + "10.0.16.0/20",
+      + "10.0.32.0/20",
+    ]
+  + tunnel_server      = (known after apply)
+  + vpc-id             = (known after apply)
+  + web_sg             = (known after apply)
+```
+
+### Some additional functionalities in example 
+Example implements swtiching off all instances at night time IST 
+```
+resource "aws_autoscaling_schedule" "dev-stop" {
+  for_each = var.app_stacks
+
+  scheduled_action_name = "dev-stop"
+  min_size              = 0
+  max_size              = 0
+  desired_capacity      = 0
+  recurrence            = "0 16 * * 1-5"
+  # time_zone              = "Asia/Kolkata"
+  autoscaling_group_name = module.compute[each.key].asg_names
+}
+
+resource "aws_autoscaling_schedule" "dev-start" {
+  for_each = var.app_stacks
+
+  scheduled_action_name = "dev-start"
+  min_size              = 1
+  max_size              = 1
+  desired_capacity      = 1
+  recurrence            = "30 3 * * 1-5"
+  # time_zone              = "Asia/Kolkata"
+  autoscaling_group_name = module.compute[each.key].asg_names
+}
+```
+
+Tunnel server is setup in public subnet to access private EC2 instance (SSM is enabled by default but added as example)
+
+```
+module "tunnel" {
+  source = "../modules/tunnel"
+
+  namespace      = var.namespace
+  public_subnets = module.vpc.public_subnets[*].id
+  tunnel_sg      = module.vpc.tunnel_sg
+  ami_id         = "ami-0842f538dc8728b9a"
+  key_name       = "sandbox-tf-mumbai"
+
+}
+```
+
+### Destroy all artefacts created 
+Once you are done with execution, destroy environment using following command 
+
+```
+terraform destroy -var-file=terraform-dev.tfvars 
 ```
 
 ## Author
