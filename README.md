@@ -91,7 +91,7 @@ module "database" {
 
 ## Architecture example 
 
-![Sample AWS Architecture]("/AWS example architecture.png")
+![Sample AWS Architecture](https://github.com/mandarnilange/terraform-starter-aws/blob/main/AWS%20example%20architecture.png)
 
 ## Steps to use example 
 
