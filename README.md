@@ -91,7 +91,7 @@ module "database" {
 
 ## Architecture example 
 
-![Sample AWS Architecture](/AWS example architecture.png)
+![Sample AWS Architecture]("/AWS example architecture.png")
 
 ## Steps to use example 
 
