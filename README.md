@@ -8,9 +8,10 @@ This is starter project build for setting up multi-tier environment using terraf
 
 
 ## Required before you start 
-Installed version of terraform 1.0 <br/>
-EC2 Key pair created in AWS  <br/>
-Instance profile created for EC2 <br/>
+* Installed version of terraform 1.0 <br/>
+* EC2 Key pair created in AWS  <br/>
+* Instance profile created for EC2 <br/>
+* AWS IAM access key configured using AWS config
 
 
 ## Modules  
